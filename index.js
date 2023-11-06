@@ -28,7 +28,31 @@ async function run() {
         await client.connect();
 
         const jobCollection = client.db('job-search').collection('jobs')
+        const bidJobsCollection = client.db('job-search').collection('bidJobs')
 
+
+        //  Bid job add DATA MongoDB 
+        app.post('/addBidJob', async (req, res) => {
+            const job = req.body;
+            console.log(job)
+            const result = await bidJobsCollection.insertOne(job);
+            res.send(result)
+        })
+
+        //  Query kore specefic user get data 
+
+        app.get('/bidJobs',async(req, res )=>{
+            console.log(req.query.email);
+            let query ={}
+        if(req.query?.email){
+            query = {email: req.query.email}
+
+        }
+
+
+            const result = await bidJobsCollection.find(query).toArray();
+            res.send(result)
+        })
 
 
         //  data base job data add 
