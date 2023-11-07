@@ -41,12 +41,12 @@ async function run() {
 
         //  Query kore specefic user get data 
 
-        app.get('/bidJobs',async(req, res )=>{
+        app.get('/bidJobs', async (req, res) => {
             console.log(req.query.email);
-            let query ={}
-        if(req.query?.email){
-            query = {email: req.query.email}
-        }
+            let query = {}
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
             const result = await bidJobsCollection.find(query).toArray();
             res.send(result)
         })
@@ -67,7 +67,7 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
-    
+
 
         //  single data gate 
 
@@ -84,17 +84,38 @@ async function run() {
 
         //  email diya all job data query  and user data gate 
 
-        app.get('/job',async(req, res )=>{
+        app.get('/job', async (req, res) => {
             console.log(req.query.email);
-            let query ={}
-        if(req.query?.email){
-            query = {email: req.query.email}
-        }
+            let query = {}
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
             const result = await jobCollection.find(query).toArray();
             res.send(result)
         })
 
 
+        //  data update and put operation 
+
+        app.put("/product/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const option = { upsert: true };
+            const updateProducts = req.body;
+            // const update = {
+            //     $set: {
+            //         name: updateProducts.name,
+            //         image: updateProducts.image,
+            //         brand_name: updateProducts.brand_name,
+            //         price: updateProducts.price,
+            //         type: updateProducts.type,
+            //         description: updateProducts.description,
+            //         rating: updateProducts.rating
+            //     }
+            // }
+            const result = await productCollection.updateOne(filter, update, option)
+            res.send(result)
+        })
 
 
 
