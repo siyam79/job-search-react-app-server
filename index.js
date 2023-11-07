@@ -48,7 +48,7 @@ async function run() {
         //  jwt token varify
         app.post("/jwt", async (req, res) => {
             const user = req.body;
-            console.log("user for token", user);
+            console.log("user for token successfull", user);
             const token = jwt.sign(user, process.env.VARIFY_TOKEN, {
                 expiresIn: "1h",
             });
