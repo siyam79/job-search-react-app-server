@@ -4,10 +4,17 @@ const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 const cors = require('cors')
-
+const jwt = require("jsonwebtoken");
 // middleware 
 app.use(express.json());
-app.use(cors())
+app.use(
+    cors({
+        origin: ["http://localhost:5173"],
+        credentials: true,
+    })
+);
+
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.29n9zox.mongodb.net/?retryWrites=true&w=majority`;
@@ -30,14 +37,38 @@ async function run() {
         const jobCollection = client.db('job-search').collection('jobs')
         const bidJobsCollection = client.db('job-search').collection('bidJobs')
 
-
         //  Bid job add DATA MongoDB 
         app.post('/addBidJob', async (req, res) => {
             const job = req.body;
-            console.log(job)
+            // console.log(job)
             const result = await bidJobsCollection.insertOne(job);
             res.send(result)
         })
+
+        //  jwt token varify
+        app.post("/jwt", async (req, res) => {
+            const user = req.body;
+            console.log("user for token", user);
+            const token = jwt.sign(user, process.env.VARIFY_TOKEN, {
+                expiresIn: "1h",
+            });
+            res
+                .cookie("token", token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                })
+                .send({ success: true });
+        });
+
+        app.post("/logout", async (req, res) => {
+            const user = req.body;
+            console.log("logged out", user);
+            res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+        });
+
+
+
 
         //  Query kore specefic user get data 
 
@@ -56,7 +87,7 @@ async function run() {
 
         app.post('/addJob', async (req, res) => {
             const job = req.body;
-            console.log(job)
+            // console.log(job)
             const result = await jobCollection.insertOne(job);
             res.send(result)
         })
@@ -106,42 +137,36 @@ async function run() {
             res.send(result)
         })
 
+        app.put("/updateJob/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const option = { upsert: true };
+            const updateJob = req.body;
+            const update = {
+                $set: {
+                    title: updateJob.title,
+                    deadline: updateJob.deadline,
+                    minimumPrice: updateJob.minimumPrice,
+                    maximumPrice: updateJob.maximumPrice,
+                    description: updateJob.description,
+                    category: updateJob.category,
+                }
+            }
+            const result = await jobCollection.updateOne(filter, update, option)
+            res.send(result)
+        })
 
 
-
-        // app.put("/updateJob/:id", async (req, res) => {
-        //     const id = req.params.id;
-        //     const filter = { _id: new ObjectId(id) }
-        //     const option = { upsert: true };
-        //     const updateProducts = req.body;
-            // const update = {
-            //     $set: {
-            //         name: updateProducts.name,
-            //         image: updateProducts.image,
-            //         brand_name: updateProducts.brand_name,
-            //         price: updateProducts.price,
-            //         type: updateProducts.type,
-            //         description: updateProducts.description,
-            //         rating: updateProducts.rating
-            //     }
-            // }
-        //     const result = await jobCollection.updateOne(filter, update, option)
-        //     res.send(result)
-        // })
+        //  delete option 
+        app.delete('/deleteJob/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await jobCollection.deleteOne(query);
+            res.send(result)
+        })
 
 
-
-        // app.get("/job/:id", async (req, res) => {
-        //     const id = req.params.id;
-        //     console.log(id);
-        //     const quaery = {
-        //         _id: new ObjectId(id),
-        //     };
-        //     const result = await jobCollection.findOne(quaery)
-        //     res.send(result)
-        // })
-
-
+        //  jwt token varify 
 
 
 
