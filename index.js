@@ -46,10 +46,7 @@ async function run() {
             let query ={}
         if(req.query?.email){
             query = {email: req.query.email}
-
         }
-
-
             const result = await bidJobsCollection.find(query).toArray();
             res.send(result)
         })
@@ -83,6 +80,21 @@ async function run() {
             const result = await jobCollection.findOne(quaery)
             res.send(result)
         })
+
+
+        //  email diya all job data query  and user data gate 
+
+        app.get('/job',async(req, res )=>{
+            console.log(req.query.email);
+            let query ={}
+        // if(req.query?.email){
+        //     query = {email: req.query.email}
+        // }
+            const result = await jobCollection.find(query).toArray();
+            res.send(result)
+        })
+
+
 
 
 
