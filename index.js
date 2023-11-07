@@ -97,11 +97,23 @@ async function run() {
 
         //  data update and put operation 
 
-        app.put("/product/:id", async (req, res) => {
+        app.get("/updateJob/:id", async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: new ObjectId(id) }
-            const option = { upsert: true };
-            const updateProducts = req.body;
+            const query = {
+                _id: new ObjectId(id)
+            };
+            const result = await jobCollection.findOne(query)
+            res.send(result)
+        })
+
+
+
+
+        // app.put("/updateJob/:id", async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) }
+        //     const option = { upsert: true };
+        //     const updateProducts = req.body;
             // const update = {
             //     $set: {
             //         name: updateProducts.name,
@@ -113,9 +125,9 @@ async function run() {
             //         rating: updateProducts.rating
             //     }
             // }
-            const result = await productCollection.updateOne(filter, update, option)
-            res.send(result)
-        })
+        //     const result = await jobCollection.updateOne(filter, update, option)
+        //     res.send(result)
+        // })
 
 
 
