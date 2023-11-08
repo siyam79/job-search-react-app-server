@@ -1,12 +1,17 @@
 const express = require('express')
 require("dotenv").config();
 const app = express()
+const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 const cors = require('cors')
 const jwt = require("jsonwebtoken");
+
+
+
 // middleware 
 app.use(express.json());
+app.use(cookieParser())
 app.use(
     cors({
         origin: ["http://localhost:5173"],
@@ -29,6 +34,33 @@ const client = new MongoClient(uri, {
     }
 });
 
+
+
+//  verify middleware
+const logger = (req, res, next) => {
+    console.log('log information', req.method, req.url);
+    next()
+}
+const verify = (req, res, next) => {
+    const token = req?.cookies?.token;
+    console.log(token);
+    if (!token) {
+        return res.status(401).send({ message: 'Unauthorized Access' })
+
+    }
+    jwt.verify(token, process.env.VARIFY_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'Unauthorized Access' })
+        }
+        req.user = decoded;
+        next()
+    })
+
+}
+
+
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -45,12 +77,13 @@ async function run() {
             res.send(result)
         })
 
+
         //  jwt token varify
         app.post("/jwt", async (req, res) => {
             const user = req.body;
             console.log("user for token successfull", user);
             const token = jwt.sign(user, process.env.VARIFY_TOKEN, {
-                expiresIn: "1h",
+                expiresIn: "2h",
             });
             res
                 .cookie("token", token, {
@@ -72,8 +105,13 @@ async function run() {
 
         //  Query kore specefic user get data 
 
-        app.get('/bidJobs', async (req, res) => {
+        app.get('/bidJobs', logger, verify, async (req, res) => {
             console.log(req.query.email);
+            console.log("cokies parcher", req.user);
+            if ( req.user.email !== req.query.email) {
+                return res.status(403).send({message:"forbidden access"})
+                
+            }
             let query = {}
             if (req.query?.email) {
                 query = { email: req.query.email }
@@ -117,6 +155,7 @@ async function run() {
 
         app.get('/job', async (req, res) => {
             console.log(req.query.email);
+           
             let query = {}
             if (req.query?.email) {
                 query = { email: req.query.email }
