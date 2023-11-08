@@ -93,7 +93,7 @@ async function run() {
 
         app.post("/logout", async (req, res) => {
             const user = req.body;
-            console.log("logged out", user);
+            console.log("logged out user", user);
             res.clearCookie("token", { maxAge: 0 }).send({ success: true });
         });
 
@@ -105,9 +105,9 @@ async function run() {
         app.get('/bidJobs', logger, verify, async (req, res) => {
             console.log(req.query.email);
             // console.log("cokies parcher", req.user);
-            if ( req.user.email !== req.query.email) {
-                return res.status(403).send({message:"forbidden access"})
-                
+            if (req.user.email !== req.query.email) {
+                return res.status(403).send({ message: "forbidden access" })
+
             }
             let query = {}
             if (req.query?.email) {
@@ -152,7 +152,7 @@ async function run() {
 
         app.get('/job', async (req, res) => {
             console.log(req.query.email);
-           
+
             let query = {}
             if (req.query?.email) {
                 query = { email: req.query.email }
@@ -193,6 +193,27 @@ async function run() {
         })
 
 
+
+        //  pending data update
+
+        app.put("/updateStatus/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const option = { upsert: true };
+            const updatePending = req.body;
+            const update = {
+                $set: {
+                    status:updatePending.status,
+                }
+            }
+            const result = await bidJobsCollection.updateOne(filter, update, option)
+            res.send(result)
+        })
+
+
+
+
+
         //  delete option 
         app.delete('/deleteJob/:id', async (req, res) => {
             const id = req.params.id;
@@ -202,7 +223,13 @@ async function run() {
         })
 
 
-        //  jwt token varify 
+        // 
+
+        app.get("/reqJob", async (req, res) => {
+            const cursor = bidJobsCollection.find();
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
 
 
