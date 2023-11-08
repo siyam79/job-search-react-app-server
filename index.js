@@ -19,9 +19,6 @@ app.use(
     })
 );
 
-
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.29n9zox.mongodb.net/?retryWrites=true&w=majority`;
 console.log(uri);
 
@@ -38,7 +35,7 @@ const client = new MongoClient(uri, {
 
 //  verify middleware
 const logger = (req, res, next) => {
-    console.log('log information', req.method, req.url);
+    console.log('loger information', req.method, req.url);
     next()
 }
 const verify = (req, res, next) => {
@@ -81,7 +78,7 @@ async function run() {
         //  jwt token varify
         app.post("/jwt", async (req, res) => {
             const user = req.body;
-            console.log("user for token successfull", user);
+            // console.log("user for token successfull", user);
             const token = jwt.sign(user, process.env.VARIFY_TOKEN, {
                 expiresIn: "2h",
             });
@@ -107,7 +104,7 @@ async function run() {
 
         app.get('/bidJobs', logger, verify, async (req, res) => {
             console.log(req.query.email);
-            console.log("cokies parcher", req.user);
+            // console.log("cokies parcher", req.user);
             if ( req.user.email !== req.query.email) {
                 return res.status(403).send({message:"forbidden access"})
                 
